@@ -1,0 +1,6 @@
+@Chemistry_laboratory_management_HostAddress = http://localhost:5058
+
+GET {{Chemistry_laboratory_management_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
