@@ -32,8 +32,11 @@ namespace laboratory.BLL.Services
                 _env = env;
             }
 
-          
 
+            public async Task<Experiment> GetExperimentByIdAsync(int id)
+            {
+                return await _experimentRepository.GetByIdAsync(id);
+            }
             public async Task<bool> UploadPdfAsync(int experimentId, IFormFile file)
             {
                 var experiment = await _experimentRepository.GetByIdAsync(experimentId);

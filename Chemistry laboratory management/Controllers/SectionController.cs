@@ -331,5 +331,81 @@ namespace Chemistry_laboratory_management.Controllers
 
             return Ok(sectionDTOs);
         }
+        [HttpPost("{groupId}/return-materials-for-absents")]
+        public async Task<IActionResult> ReturnMaterialsForAbsentStudents(int groupId)
+        {
+            var group = await _groupRepository.GetByIdAsync(groupId);
+            if (group == null)
+                return NotFound(new ApiResponse(404, "Group not found."));
+
+            var sections = await _sectionRepository.GetAllWithIncludeAsync(
+                s => s.GroupId == groupId,
+                s => s.Experiment,
+                s => s.Experiment.ExperimentMaterials
+            );
+
+            if (sections == null || !sections.Any())
+                return Ok(new { Message = "No sections found for this group." });
+
+            var allAttendance = new Dictionary<int, bool>(); // studentId => isPresent (true if present in any section)
+
+            foreach (var section in sections)
+            {
+                if (!string.IsNullOrWhiteSpace(section.AttendanceJson))
+                {
+                    var attendanceRecords = JsonConvert.DeserializeObject<Dictionary<int, bool>>(section.AttendanceJson);
+                    foreach (var record in attendanceRecords)
+                    {
+                        if (!allAttendance.ContainsKey(record.Key))
+                            allAttendance[record.Key] = record.Value;
+                        else
+                            allAttendance[record.Key] = allAttendance[record.Key] || record.Value;
+                    }
+                }
+            }
+
+            int totalStudents = group.Students.Count;
+            int presentCount = allAttendance.Count(kvp => kvp.Value);
+            int absentCount = totalStudents - presentCount;
+
+            // Dictionary علشان ما نكررش نفس الماده في اكتر من سكشن
+            var materialAdjustments = new Dictionary<int, double>(); // MaterialId => QuantityToAdd
+
+            foreach (var section in sections)
+            {
+                foreach (var expMaterial in section.Experiment.ExperimentMaterials)
+                {
+                    if (materialAdjustments.ContainsKey(expMaterial.MaterialId))
+                        materialAdjustments[expMaterial.MaterialId] += expMaterial.QuantityRequired * absentCount;
+                    else
+                        materialAdjustments[expMaterial.MaterialId] = expMaterial.QuantityRequired * absentCount;
+                }
+            }
+
+            // نرجّع المواد للمخزون
+            foreach (var entry in materialAdjustments)
+            {
+                var material = await _materialRepository.GetByIdAsync(entry.Key);
+                if (material != null)
+                {
+                    material.Quantity += entry.Value;
+                    await _materialRepository.UpdateAsync(material);
+                }
+            }
+
+            return Ok(new
+            {
+                Message = "Materials returned to stock for absent students.",
+                ReturnedMaterials = materialAdjustments.Select(m => new
+                {
+                    MaterialId = m.Key,
+                    QuantityAdded = m.Value
+                })
+            });
+        }
+
+
+       
+
     }
 }

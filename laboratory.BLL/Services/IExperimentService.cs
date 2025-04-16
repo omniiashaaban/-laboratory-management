@@ -17,6 +17,7 @@ namespace laboratory.BLL.Services
         public interface IExperimentService
         {           
             Task<bool> UploadPdfAsync(int experimentId, IFormFile file);
+            Task<Experiment> GetExperimentByIdAsync(int id);
         }
     }
 

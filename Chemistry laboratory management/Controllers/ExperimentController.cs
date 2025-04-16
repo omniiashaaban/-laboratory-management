@@ -1,4 +1,6 @@
 ﻿using Chemistry_laboratory_management.Dtos;
+using Chemistry_laboratory_management.Helper;
+using laboratory.BLL.Services.laboratory.BLL.Services;
 using laboratory.DAL.Models;
 using laboratory.DAL.Repository;
 using LinkDev.Facial_Recognition.BLL.Helper.Errors;
@@ -8,6 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 [Route("api/[controller]")]
 public class ExperimentController : ControllerBase
 {
+    private readonly IExperimentService _experimentService;
+    private readonly MaterialService _materialService; // Assuming MaterialService for material management
+    private readonly IWebHostEnvironment _env;
     private readonly GenericRepository<Experiment> _experimentRepository;
     private readonly GenericRepository<Department> _departmentRepository;
     private readonly GenericRepository<Material> _materialRepository;
@@ -15,8 +20,12 @@ public class ExperimentController : ControllerBase
     public ExperimentController(
         GenericRepository<Experiment> experimentRepository,
         GenericRepository<Department> departmentRepository,
-        GenericRepository<Material> materialRepository)
+        GenericRepository<Material> materialRepository, IExperimentService experimentService,
+        MaterialService materialService, IWebHostEnvironment env)
     {
+        _experimentService = experimentService;
+        _materialService = materialService;
+        _env = env;
         _experimentRepository = experimentRepository;
         _departmentRepository = departmentRepository;
         _materialRepository = materialRepository;
@@ -71,7 +80,46 @@ public class ExperimentController : ControllerBase
 
         return Ok(response);
     }
-    [HttpGet]
+    [HttpPost("upload-pdf/{experimentId}")]
+    public async Task<ActionResult<string>> UploadPdf(int experimentId, IFormFile file)
+    {
+        // Attempt to upload the PDF file
+        var result = await _experimentService.UploadPdfAsync(experimentId, file);
+
+        if (result)
+        {
+            // Return a success response with the file URL
+            return Ok(new { Message = "PDF uploaded successfully", FileUrl = $"/Experiments/{file.FileName}" });
+        }
+
+        // Return a failure response if the upload fails
+        return BadRequest("Failed to upload PDF.");
+    }
+    [HttpGet("download-pdf/{experimentId}")]
+    public async Task<IActionResult> DownloadPdf(int experimentId)
+    {
+        // Get the experiment by ID
+        var experiment = await _experimentService.GetExperimentByIdAsync(experimentId);
+        if (experiment == null || string.IsNullOrEmpty(experiment.PdfFilePath))
+        {
+            return NotFound("Experiment PDF not found.");
+        }
+
+        // Construct the file path from the stored PDF file path
+        var filePath = Path.Combine(_env.WebRootPath, experiment.PdfFilePath.TrimStart('/'));
+
+        // Check if the file exists
+        if (!System.IO.File.Exists(filePath))
+        {
+            return NotFound("PDF file not found on the server.");
+        }
+        // Get the file bytes for download
+        var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+
+        // Return the file with content type 'application/pdf'
+        return File(fileBytes, "application/pdf", Path.GetFileName(filePath));
+    }
+        [HttpGet]
     public async Task<IActionResult> GetAllExperiments()
     {
         var experiments = await _experimentRepository.GetAllWithIncludeAsync(
