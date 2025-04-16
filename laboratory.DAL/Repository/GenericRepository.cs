@@ -70,5 +70,12 @@ namespace laboratory.DAL.Repository
             }
             return await query.FirstOrDefaultAsync(predicate);
         }
+
+
+       public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _context.Set<T>().Where(predicate).ToListAsync();
     }
+
+}
 }

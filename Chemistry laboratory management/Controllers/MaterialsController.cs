@@ -51,7 +51,7 @@ namespace laboratory.API.Controllers
                 return BadRequest(new ApiResponse(400, "The provided ID does not match the material ID."));
 
             if (string.IsNullOrWhiteSpace(materialDTO.Name) ||
-                string.IsNullOrWhiteSpace(materialDTO.Code) ||
+                
                 string.IsNullOrWhiteSpace(materialDTO.Type))
             {
                 return BadRequest(new ApiResponse(400, "Name, Code, and Type are required fields."));
@@ -68,7 +68,7 @@ namespace laboratory.API.Controllers
                 return NotFound(new ApiResponse(404, "Material not found."));
 
             existingMaterial.Name = materialDTO.Name;
-            existingMaterial.Code = materialDTO.Code;
+          
             existingMaterial.Type = materialDTO.Type;
             existingMaterial.Quantity = materialDTO.Quantity;
             existingMaterial.ProductionDate = materialDTO.ProductionDate;
@@ -118,7 +118,7 @@ namespace laboratory.API.Controllers
             {
                 Id = material.Id,
                 Name = material.Name,
-                Code = material.Code,
+           
                 Type = material.Type,
                 Quantity = material.Quantity,
                 ProductionDate = material.ProductionDate,
@@ -132,7 +132,7 @@ namespace laboratory.API.Controllers
             {
                 Id = materialDTO.Id,
                 Name = materialDTO.Name,
-                Code = materialDTO.Code,
+                
                 Type = materialDTO.Type,
                 Quantity = materialDTO.Quantity,
                 ProductionDate = materialDTO.ProductionDate,

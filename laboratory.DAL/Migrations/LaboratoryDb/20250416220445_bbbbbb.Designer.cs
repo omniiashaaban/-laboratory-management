@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using laboratory.DAL.Data.context;
 
@@ -11,9 +12,11 @@ using laboratory.DAL.Data.context;
 namespace laboratory.DAL.Migrations.LaboratoryDb
 {
     [DbContext(typeof(LaboratoryDbContext))]
-    partial class LaboratoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250416220445_bbbbbb")]
+    partial class bbbbbb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -288,6 +291,11 @@ namespace laboratory.DAL.Migrations.LaboratoryDb
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("datetime2");

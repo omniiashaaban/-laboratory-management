@@ -9,6 +9,9 @@
         public string PdfFilePath { get; set; }
         public int Level { get; set; }
         public List<int> DepartmentIds { get; internal set; }
+        public List<int> MaterialIds { get; internal set; }
+        public List<String> DepartmentNames { get; internal set; }
+        
     }
 
     public class AddExperimentDTO

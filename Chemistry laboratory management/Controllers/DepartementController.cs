@@ -35,9 +35,19 @@ namespace Chemistry_laboratory_management.Controllers
         [HttpPost]
         public async Task<ActionResult<DepartmentDTO>> CreateDoctor([FromBody] DepartmentDTO departmentDTO)
         {
-            if (departmentDTO == null)
+            if (departmentDTO == null || string.IsNullOrWhiteSpace(departmentDTO.Name))
             {
                 return BadRequest(new ApiResponse(400, "Invalid department data."));
+            }
+
+            var departmentNameLower = departmentDTO.Name.ToLower();
+
+            var existingDept = await _departmentRepository
+                .FindAsync(d => d.Name.ToLower() == departmentNameLower);
+
+            if (existingDept.Any())
+            {
+                return BadRequest(new ApiResponse(400, "Department with the same name already exists."));
             }
 
             var dept = new Department
@@ -47,7 +57,6 @@ namespace Chemistry_laboratory_management.Controllers
 
             await _departmentRepository.AddAsync(dept);
 
-           
             var result = new getDepartmentDTO
             {
                 Id = dept.Id,
@@ -56,5 +65,7 @@ namespace Chemistry_laboratory_management.Controllers
 
             return Ok(result);
         }
+
+
     }
 }

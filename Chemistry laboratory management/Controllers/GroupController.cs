@@ -28,7 +28,8 @@ public class GroupController : ControllerBase
     public async Task<ActionResult<IEnumerable<GroupDTO>>> GetAllGroups()
     {
         var groups = await _groupRepository.GetAllWithIncludeAsync(
-                                                    g => g.Doctor
+                                                    g => g.Doctor , g => g.Department
+
                                                               );
         var groupDTOs = groups.Select(group => new getGroupDTO
         {
@@ -36,8 +37,10 @@ public class GroupController : ControllerBase
             Name = group.Name,
             Level = group.Level,
             DepartmentId = group.DepartmentId,
+            DepartmentName = group.Department.Name,
             DoctorId = group.DoctorId,
-            DoctorName = group.Doctor.FirstName
+            DoctorName = group.Doctor.FirstName,
+            NumberOfStudent=group.NumberOfStudent
         }).ToList();
 
         return Ok(groupDTOs);
@@ -47,7 +50,8 @@ public class GroupController : ControllerBase
     {
         var group = await _groupRepository.GetByIdWithIncludeAsync(
                                                  g => g.Id == id,
-                                                   g => g.Doctor
+                                                   g => g.Doctor,
+                                                    g => g.Department
                                                                 );
         if (group == null)
         {
@@ -60,8 +64,10 @@ public class GroupController : ControllerBase
             Name = group.Name,
             Level = group.Level,
             DepartmentId = group.DepartmentId,
+            DepartmentName = group.Department.Name,
             DoctorId = group.DoctorId,
-            DoctorName = group.Doctor.FirstName
+            DoctorName = group.Doctor.FirstName,
+            NumberOfStudent=group.NumberOfStudent
         };
 
         return Ok(groupDTO);
@@ -69,12 +75,16 @@ public class GroupController : ControllerBase
     [HttpGet("bydoctorId/{doctorId}")]
     public async Task<IActionResult> GetGroupsByDoctor(int doctorId)
     {
-        var Groups = await _groupRepository.GetAllAsync();
+        var Groups = await _groupRepository.GetAllWithIncludeAsync(g => g.Department);
         var groups =Groups.Where(g => g.DoctorId == doctorId).Select(g => new 
         {
              g.Id,
              g.Name,
+             g.Level,
             g.DepartmentId,
+            g.NumberOfStudent,
+            DepartmentName = g.Department != null ? g.Department.Name : "No department"
+
 
         }).ToList();
 
@@ -83,7 +93,8 @@ public class GroupController : ControllerBase
         {
             return NotFound(new ApiResponse(404,  "No groups for this doctor." ));
         }
-      
+       
+
 
         return Ok(groups);
     }
@@ -109,7 +120,8 @@ public class GroupController : ControllerBase
             Name = groupDto.Name,
             Level = groupDto.Level,
             DepartmentId = groupDto.DepartmentId,
-            DoctorId = groupDto.DoctorId
+            DoctorId = groupDto.DoctorId,
+            NumberOfStudent=groupDto.NumberOfStudent
         };
 
         await _groupRepository.AddAsync(group);
@@ -119,8 +131,10 @@ public class GroupController : ControllerBase
             Name = group.Name,
             Level = group.Level,
             DepartmentId = group.DepartmentId,
+            DepartmentName = group.Department.Name,
             DoctorId = group.DoctorId,
-            DoctorName = group.Doctor.FirstName
+            DoctorName = group.Doctor.FirstName,
+            NumberOfStudent=group.NumberOfStudent
 
         };
 
@@ -152,6 +166,7 @@ public class GroupController : ControllerBase
         existingGroup.Level = groupDto.Level;
         existingGroup.DepartmentId = groupDto.DepartmentId;
         existingGroup.DoctorId = groupDto.DoctorId;
+        existingGroup.NumberOfStudent = groupDto.NumberOfStudent;
 
         await _groupRepository.UpdateAsync(existingGroup);
 

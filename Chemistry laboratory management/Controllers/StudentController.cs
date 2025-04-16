@@ -28,7 +28,9 @@ public class StudentController : ControllerBase
     public async Task<ActionResult<IEnumerable<StudentDto>>> GetAllStudents()
     {
         var students = await _studentRepository.GetAllWithIncludeAsync(
-                                                   s =>s.Group
+                                                   s =>s.Group,
+                                                   s => s.Group.Department
+
                                                              );
 
         var studentDTOs = students.Select(student => new getStudentDto
@@ -37,7 +39,9 @@ public class StudentController : ControllerBase
             Name = student.Name,
             Email = student.Email,
             GroupId = student.GroupId,
-            GroupName = student.Group.Name
+            GroupName = student.Group.Name,
+            Level = student.Group.Level,
+            DepartmentName=student.Group.Department.Name
         }).ToList();
 
         return Ok(studentDTOs);
@@ -49,7 +53,8 @@ public class StudentController : ControllerBase
     {
         var student = await _studentRepository.GetByIdWithIncludeAsync(
                                                  g => g.Id == id,
-                                                   g => g.Group
+                                                   g => g.Group,
+                                                   s => s.Group.Department
                                                                 );
         if (student == null)
         {
@@ -62,7 +67,9 @@ public class StudentController : ControllerBase
             Name = student.Name,
             Email = student.Email,
             GroupId = student.GroupId,
-            GroupName=student.Group.Name
+            GroupName=student.Group.Name,
+            Level = student.Group.Level,
+            DepartmentName = student.Group.Department.Name
 
         };
 

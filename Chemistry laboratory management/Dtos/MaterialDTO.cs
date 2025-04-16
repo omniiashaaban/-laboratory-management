@@ -10,8 +10,7 @@ namespace laboratory.DAL.DTOs
         [Required, MaxLength(100)]
         public string Name { get; set; }
 
-        [Required, MaxLength(50)]
-        public string Code { get; set; }
+       
 
         [Required, MaxLength(50)]
         public string Type { get; set; }
@@ -32,8 +31,7 @@ namespace laboratory.DAL.DTOs
         [Required, MaxLength(100)]
         public string Name { get; set; }
 
-        [Required, MaxLength(50)]
-        public string Code { get; set; }
+       
 
         [Required, MaxLength(50)]
         public string Type { get; set; }

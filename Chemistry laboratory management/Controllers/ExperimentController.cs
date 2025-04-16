@@ -135,7 +135,8 @@ public class ExperimentController : ControllerBase
             SafetyInstruction = e.SafetyInstruction,
             PdfFilePath = e.PdfFilePath,
             Level = e.Level,
-            DepartmentIds = e.Departments.Select(d => d.Id).ToList()
+            DepartmentIds = e.Departments.Select(d => d.Id).ToList(),
+            MaterialIds = e.ExperimentMaterials.Select(d => d.Id).ToList(),          
         });
 
         return Ok(result);
@@ -163,7 +164,8 @@ public class ExperimentController : ControllerBase
             SafetyInstruction = experiment.SafetyInstruction,
             PdfFilePath = experiment.PdfFilePath,
             Level = experiment.Level,
-            DepartmentIds = experiment.Departments.Select(d => d.Id).ToList()
+            DepartmentIds = experiment.Departments.Select(d => d.Id).ToList(),
+            MaterialIds = experiment.ExperimentMaterials.Select(d => d.Id).ToList(),
         };
 
         return Ok(result);

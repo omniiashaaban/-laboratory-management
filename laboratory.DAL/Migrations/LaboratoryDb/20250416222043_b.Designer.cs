@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using laboratory.DAL.Data.context;
 
@@ -11,9 +12,11 @@ using laboratory.DAL.Data.context;
 namespace laboratory.DAL.Migrations.LaboratoryDb
 {
     [DbContext(typeof(LaboratoryDbContext))]
-    partial class LaboratoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250416222043_b")]
+    partial class b
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

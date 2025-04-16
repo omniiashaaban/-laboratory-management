@@ -17,5 +17,7 @@ namespace Chemistry_laboratory_management.Dtos
         public string Email { get; set; }
         public int GroupId { get; set; }
         public String GroupName { get; set; }
+        public int Level { get; set; }
+        public String DepartmentName { get; set; }
     }
 }
