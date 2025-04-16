@@ -18,7 +18,6 @@
         public string SafetyInstruction { get; set; }
 
         public int Level { get; set; }
-        public int id { get; set; }
         public List<ExperimentMaterialDTO> Materials { get; set; }
         public List<int> DepartmentIds { get; set; }
     }
@@ -28,6 +27,11 @@
         public int MaterialId { get; set; }
         public int QuantityRequired { get; set; }
     }
+    public class ResponseDTO
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
 
-    
+
 }
