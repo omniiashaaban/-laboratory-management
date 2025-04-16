@@ -25,7 +25,7 @@ public class ExperimentController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> AddExperiment([FromBody] AddExperimentDTO dto)
     {
-        // التأكد من الأقسام
+     
         var departments = await _departmentRepository.GetAllAsync();
         var selectedDepartments = departments
             .Where(d => dto.DepartmentIds.Contains(d.Id))
