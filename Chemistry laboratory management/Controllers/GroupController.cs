@@ -10,6 +10,7 @@ using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 [Route("api/[controller]")]
 public class GroupController : ControllerBase
 {
+    #region MyRegion
     private readonly GenericRepository<Group> _groupRepository;
     private readonly GenericRepository<Department> _departmentRepository;
     private readonly GenericRepository<Doctor> _doctorRepository;
@@ -21,9 +22,11 @@ public class GroupController : ControllerBase
         _groupRepository = groupRepository;
         _departmentRepository = departmentRepository;
         _doctorRepository = doctorRepository;
-    }
+    } 
+    #endregion
 
 
+    [Authorize(Roles = "Admin")]    
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GroupDTO>>> GetAllGroups()
     {
@@ -45,6 +48,9 @@ public class GroupController : ControllerBase
 
         return Ok(groupDTOs);
     }
+
+    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Doctor")]
     [HttpGet("{id}")]
     public async Task<ActionResult<GroupDTO>> GetGroupById(int id)
     {
@@ -72,6 +78,9 @@ public class GroupController : ControllerBase
 
         return Ok(groupDTO);
     }
+
+    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Doctor")]
     [HttpGet("bydoctorId/{doctorId}")]
     public async Task<IActionResult> GetGroupsByDoctor(int doctorId)
     {
@@ -100,6 +109,8 @@ public class GroupController : ControllerBase
     }
 
 
+
+    [Authorize(Roles = "Admin")]  
     [HttpPost]
     public async Task<ActionResult<GroupDTO>> CreateGroup([FromBody] GroupDTO groupDto)
     {
@@ -141,6 +152,9 @@ public class GroupController : ControllerBase
         return Ok(response);
     }
 
+
+
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateGroup(int id, [FromBody] GroupDTO groupDto)
     {
@@ -173,6 +187,8 @@ public class GroupController : ControllerBase
         return Ok(new ApiResponse(200, "Group updated successfully."));
     }
 
+
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteGroup(int id)
     {

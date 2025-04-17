@@ -4,12 +4,15 @@ using laboratory.BLL.Services.laboratory.BLL.Services;
 using laboratory.DAL.Models;
 using laboratory.DAL.Repository;
 using LinkDev.Facial_Recognition.BLL.Helper.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
 public class ExperimentController : ControllerBase
 {
+    #region MyRegion
+
     private readonly IExperimentService _experimentService;
     private readonly MaterialService _materialService; // Assuming MaterialService for material management
     private readonly IWebHostEnvironment _env;
@@ -30,7 +33,10 @@ public class ExperimentController : ControllerBase
         _departmentRepository = departmentRepository;
         _materialRepository = materialRepository;
     }
+    #endregion
 
+
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> AddExperiment([FromBody] AddExperimentDTO dto)
     {
@@ -80,6 +86,10 @@ public class ExperimentController : ControllerBase
 
         return Ok(response);
     }
+
+
+
+    [Authorize(Roles = "Admin")]
     [HttpPost("upload-pdf/{experimentId}")]
     public async Task<ActionResult<string>> UploadPdf(int experimentId, IFormFile file)
     {
@@ -95,6 +105,10 @@ public class ExperimentController : ControllerBase
         // Return a failure response if the upload fails
         return BadRequest("Failed to upload PDF.");
     }
+
+
+    [Authorize(Roles = "Student")]
+    [Authorize(Roles = "Doctor")]
     [HttpGet("download-pdf/{experimentId}")]
     public async Task<IActionResult> DownloadPdf(int experimentId)
     {
@@ -119,7 +133,12 @@ public class ExperimentController : ControllerBase
         // Return the file with content type 'application/pdf'
         return File(fileBytes, "application/pdf", Path.GetFileName(filePath));
     }
-        [HttpGet]
+
+
+
+    [Authorize(Roles = "Student")]
+    [Authorize(Roles = "Doctor")]
+    [HttpGet]
     public async Task<IActionResult> GetAllExperiments()
     {
         var experiments = await _experimentRepository.GetAllWithIncludeAsync(
@@ -142,6 +161,8 @@ public class ExperimentController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "Student")]
+    [Authorize(Roles = "Doctor")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetExperimentById(int id)
     {
@@ -171,7 +192,7 @@ public class ExperimentController : ControllerBase
         return Ok(result);
     }
 
-    // PUT: api/experiment/{id}
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateExperiment(int id, [FromBody] AddExperimentDTO dto)
     {
@@ -212,6 +233,11 @@ public class ExperimentController : ControllerBase
 
         return Ok(new ApiResponse(200, "Experiment updated successfully."));
     }
+
+
+
+    [Authorize(Roles = "Admin")]
+
     // DELETE: api/experiment/{id}
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteExperiment(int id)

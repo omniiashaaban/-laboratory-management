@@ -2,6 +2,7 @@
 using laboratory.DAL.Models;
 using laboratory.DAL.Repository;
 using LinkDev.Facial_Recognition.BLL.Helper.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,8 @@ using System.Threading.Tasks;
 
 namespace laboratory.API.Controllers
 {
+    
+
     [Route("api/[controller]")]
     [ApiController]
     public class MaterialController : ControllerBase
@@ -19,7 +22,7 @@ namespace laboratory.API.Controllers
         {
             _materialRepository = materialRepository;
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MaterialDTO>>> GetMaterials()
         {
@@ -28,6 +31,7 @@ namespace laboratory.API.Controllers
             return Ok(materialDTOs);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<MaterialDTO>> GetMaterial(int id)
         {
@@ -36,6 +40,7 @@ namespace laboratory.API.Controllers
             return Ok(MapToDTO(material));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult> AddMaterial([FromBody] MaterialDTO materialDTO)
         {
@@ -44,6 +49,7 @@ namespace laboratory.API.Controllers
             return CreatedAtAction(nameof(GetMaterial), new { id = material.Id }, MapToDTO(material));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateMaterial(int id, [FromBody] MaterialDTO materialDTO)
         {
@@ -79,7 +85,7 @@ namespace laboratory.API.Controllers
             return Ok(new ApiResponse(200, "Material updated successfully."));
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteMaterial(int id)
         {
@@ -91,6 +97,8 @@ namespace laboratory.API.Controllers
 
             return Ok(new ApiResponse(200, "Material deleted successfully."));
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("Materials/expiring")]
         public async Task<ActionResult<IEnumerable<MaterialDTO>>> GetExpiringChemicals()
         {

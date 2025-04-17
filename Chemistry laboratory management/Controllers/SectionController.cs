@@ -2,6 +2,7 @@
 using laboratory.DAL.Models;
 using laboratory.DAL.Repository;
 using LinkDev.Facial_Recognition.BLL.Helper.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -11,6 +12,7 @@ namespace Chemistry_laboratory_management.Controllers
     [ApiController]
     public class SectionController : ControllerBase
     {
+        #region MyRegion
         private readonly GenericRepository<Section> _sectionRepository;
         private readonly GenericRepository<Doctor> _doctorRepository;
         private readonly GenericRepository<Experiment> _experimentRepository;
@@ -38,6 +40,9 @@ namespace Chemistry_laboratory_management.Controllers
 
         }
 
+        #endregion
+
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAllSections()
         {
@@ -64,6 +69,7 @@ namespace Chemistry_laboratory_management.Controllers
             return Ok(sectionDTOs);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSectionById(int id)
         {
@@ -93,6 +99,7 @@ namespace Chemistry_laboratory_management.Controllers
             return Ok(sectionDTO);
         }
 
+        [Authorize(Roles = "Doctor")]
         [HttpPost]
         public async Task<IActionResult> CreateSection([FromBody] requestsectionDTO sectionDTO)
         {
@@ -138,7 +145,7 @@ namespace Chemistry_laboratory_management.Controllers
         }
 
 
-
+        [Authorize(Roles = "Doctor")]
         [HttpPost("generate-code/{sectionId}")]
         public async Task<IActionResult> GenerateAttendanceCode(int sectionId)
         {
@@ -157,6 +164,7 @@ namespace Chemistry_laboratory_management.Controllers
             return Ok(new { Code = section.AttendanceCode, Expiry = section.CodeExpiry });
         }
 
+        [Authorize(Roles = "Student")]
         [HttpPost("{sectionId}/attendance/{studentId}")]
         public async Task<IActionResult> MarkAttendance(int sectionId, int studentId, [FromBody] string attendanceCode)
         {
@@ -196,7 +204,7 @@ namespace Chemistry_laboratory_management.Controllers
             return Ok(new ApiResponse(200, "Attendance recorded successfully."));
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPatch("{sectionId}/evaluate")]
         public async Task<IActionResult> EvaluateSection(int sectionId)
         {
@@ -253,6 +261,9 @@ namespace Chemistry_laboratory_management.Controllers
                     : "Section rejected. Not enough materials in stock."
             });
         }
+
+        [Authorize(Roles = "Doctor")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("{sectionId}/attendance")]
         public async Task<IActionResult> GetAttendance(int sectionId)
         {
@@ -282,6 +293,8 @@ namespace Chemistry_laboratory_management.Controllers
                 return BadRequest(new ApiResponse(500, "Error parsing attendance JSON: " + ex.Message));
             }
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("accepted")]
         public async Task<IActionResult> GetAcceptedSections()
         {
@@ -313,6 +326,7 @@ namespace Chemistry_laboratory_management.Controllers
             return Ok(sectionDTOs);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("rejected")]
         public async Task<IActionResult> GetRejectedSections()
         {
@@ -344,6 +358,7 @@ namespace Chemistry_laboratory_management.Controllers
             return Ok(sectionDTOs);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("{sectionId}/return-materials-for-absents")]
         public async Task<IActionResult> ReturnMaterialsForAbsentStudents(int sectionId)
         {

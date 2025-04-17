@@ -2,6 +2,7 @@
 using laboratory.DAL.Models;
 using laboratory.DAL.Repository;
 using LinkDev.Facial_Recognition.BLL.Helper.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chemistry_laboratory_management.Controllers
@@ -19,6 +20,9 @@ namespace Chemistry_laboratory_management.Controllers
             _doctorRepository = doctorRepository;
             _experimentRepository = experimentRepository;
         }
+
+        
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Department>>> GetAlldepartments()
         {
@@ -32,6 +36,9 @@ namespace Chemistry_laboratory_management.Controllers
 
             return Ok(departmentDTOs);
         }
+
+        [Authorize(Roles = "Admin")]
+
         [HttpPost]
         public async Task<ActionResult<DepartmentDTO>> CreateDoctor([FromBody] DepartmentDTO departmentDTO)
         {

@@ -3,6 +3,7 @@ using laboratory.DAL.Data.context;
 using laboratory.DAL.Models;
 using laboratory.DAL.Repository;
 using LinkDev.Facial_Recognition.BLL.Helper.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Migrations;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace Chemistry_laboratory_management.Controllers
             _groupRepository = groupRepository;
         }
 
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("{id}")]
         public async Task<ActionResult<DoctorDTO>> GetDoctorById(int id)
@@ -40,11 +42,13 @@ namespace Chemistry_laboratory_management.Controllers
                 FirstName = doctor.FirstName,
                 LastName = doctor.LastName,
                 Email = doctor.Email,
-                //  GroupIds = doctor.Groups.Select(d => d.Id).ToList()
             };
 
             return Ok(doctorDTO);
         }
+
+
+        [Authorize(Roles = "Admin")]
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DoctorDTO>>> GetAllDoctors()
@@ -68,7 +72,10 @@ namespace Chemistry_laboratory_management.Controllers
             return Ok(doctorDTOs);
         }
 
-            [HttpPost]
+
+        [Authorize(Roles = "Admin")]
+
+        [HttpPost]
             public async Task<ActionResult<DoctorDTO>> CreateDoctor([FromBody] DoctorDTO doctorDTO)
             {
                 if (doctorDTO == null)

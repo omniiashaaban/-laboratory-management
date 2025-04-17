@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 [Route("api/[controller]")]
 public class StudentController : ControllerBase
 {
+    #region MyRegion
     private readonly GenericRepository<Student> _studentRepository;
     private readonly GenericRepository<Department> _departmentRepository;
     private readonly GenericRepository<Group> _groupRepository;
@@ -20,10 +21,14 @@ public class StudentController : ControllerBase
         _studentRepository = studentRepository;
         _departmentRepository = departmentRepository;
         _groupRepository = groupRepository;
-    }
-  
+    } 
+    #endregion
 
-    // Endpoint to get all students
+
+  
+    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Doctor")]
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<StudentDto>>> GetAllStudents()
     {
@@ -47,7 +52,10 @@ public class StudentController : ControllerBase
         return Ok(studentDTOs);
     }
 
-    // Endpoint to get a student by ID
+
+    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Doctor")]
+ 
     [HttpGet("{id}")]
     public async Task<ActionResult<StudentDto>> GetStudentById(int id)
     {
@@ -76,7 +84,9 @@ public class StudentController : ControllerBase
         return Ok(studentDTO);
     }
 
-    // Endpoint to add a new student
+
+   
+    [Authorize(Roles = "Student")]   
     [HttpPost]
     public async Task<ActionResult<StudentDto>> CreateStudent([FromBody] StudentDto studentDto)
     {
@@ -111,7 +121,8 @@ public class StudentController : ControllerBase
         return Ok(response);
     }
 
-
+    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Student")]
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateStudent(int id, [FromBody] StudentDto studentDto)
     {
@@ -140,6 +151,8 @@ public class StudentController : ControllerBase
         return Ok(new ApiResponse(200, "Student updated successfully."));
     }
 
+
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteStudent(int id)
     {
