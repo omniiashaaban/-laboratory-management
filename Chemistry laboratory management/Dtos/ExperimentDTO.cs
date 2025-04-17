@@ -19,7 +19,6 @@
         public string Name { get; set; }
         public string Type { get; set; }
         public string SafetyInstruction { get; set; }
-
         public int Level { get; set; }
         public List<ExperimentMaterialDTO> Materials { get; set; }
         public List<int> DepartmentIds { get; set; }

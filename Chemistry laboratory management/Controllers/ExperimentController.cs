@@ -123,7 +123,7 @@ public class ExperimentController : ControllerBase
     public async Task<IActionResult> GetAllExperiments()
     {
         var experiments = await _experimentRepository.GetAllWithIncludeAsync(
-            e => e.ExperimentMaterials,
+           e => e.ExperimentMaterials,
             e => e.Departments
         );
 
@@ -136,7 +136,7 @@ public class ExperimentController : ControllerBase
             PdfFilePath = e.PdfFilePath,
             Level = e.Level,
             DepartmentIds = e.Departments.Select(d => d.Id).ToList(),
-            MaterialIds = e.ExperimentMaterials.Select(d => d.Id).ToList(),          
+            MaterialIds = e.ExperimentMaterials.Select(em => em.MaterialId).ToList()
         });
 
         return Ok(result);
@@ -165,7 +165,7 @@ public class ExperimentController : ControllerBase
             PdfFilePath = experiment.PdfFilePath,
             Level = experiment.Level,
             DepartmentIds = experiment.Departments.Select(d => d.Id).ToList(),
-            MaterialIds = experiment.ExperimentMaterials.Select(d => d.Id).ToList(),
+            MaterialIds = experiment.ExperimentMaterials.Select(em => em.MaterialId).ToList()
         };
 
         return Ok(result);

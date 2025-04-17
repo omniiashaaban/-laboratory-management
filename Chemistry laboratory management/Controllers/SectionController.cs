@@ -202,14 +202,14 @@ namespace Chemistry_laboratory_management.Controllers
         {
             var section = await _sectionRepository.GetByIdWithIncludeAsync(
                 s => s.Id == sectionId,
-                s => s.Group.Students,
+                s => s.Group,
                 s => s.Experiment.ExperimentMaterials
             );
 
             if (section == null)
                 return NotFound(new ApiResponse(404, "Section not found."));
 
-            int studentCount = section.Group.Students.Count;
+            int studentCount = section.Group.NumberOfStudent;
             bool allMaterialsSufficient = true;
             var materialUsage = new List<(Material material, double requiredQuantity)>();
 
@@ -263,7 +263,7 @@ namespace Chemistry_laboratory_management.Controllers
             if (string.IsNullOrWhiteSpace(section.AttendanceJson))
                 return Ok(new List<object>());
 
-           
+
             try
             {
                 var records = JsonConvert.DeserializeObject<Dictionary<int, bool>>(section.AttendanceJson);
@@ -285,14 +285,20 @@ namespace Chemistry_laboratory_management.Controllers
         [HttpGet("accepted")]
         public async Task<IActionResult> GetAcceptedSections()
         {
-            var acceptedSections = await _sectionRepository.GetAllWithIncludeAsync(
-                s => s.status == "Accepted",
-                s => s.Doctor,
-                s => s.Group,
-                s => s.Experiment
-            );
+            var sections = await _sectionRepository.GetAllWithIncludeAsync(
+                  s => s.Group,
+                  s => s.Doctor,
+                  s => s.Experiment);
+            var sec = sections.ToList();
 
-            var sectionDTOs = acceptedSections.Select(section => new sectionDTO
+
+            var filteredSections = sec
+                .Where(s => s.status == "Accepted")
+                .ToList();
+
+
+
+            var sectionDTOs = filteredSections.Select(section => new sectionDTO
             {
                 Id = section.Id,
                 DoctorId = section.DoctorId,
@@ -310,14 +316,20 @@ namespace Chemistry_laboratory_management.Controllers
         [HttpGet("rejected")]
         public async Task<IActionResult> GetRejectedSections()
         {
-            var rejectedSections = await _sectionRepository.GetAllWithIncludeAsync(
-                s => s.status == "Rejected",
-                s => s.Doctor,
-                s => s.Group,
-                s => s.Experiment
-            );
 
-            var sectionDTOs = rejectedSections.Select(section => new sectionDTO
+            var sections = await _sectionRepository.GetAllWithIncludeAsync(
+                  s => s.Group,
+                  s => s.Doctor,
+                  s => s.Experiment);
+
+            var sec = sections.ToList();
+
+
+            var filteredSections = sec
+                .Where(s => s.status == "Rejected")
+                .ToList();
+
+            var sectionDTOs = filteredSections.Select(section => new sectionDTO
             {
                 Id = section.Id,
                 DoctorId = section.DoctorId,
@@ -331,58 +343,47 @@ namespace Chemistry_laboratory_management.Controllers
 
             return Ok(sectionDTOs);
         }
-        [HttpPost("{groupId}/return-materials-for-absents")]
-        public async Task<IActionResult> ReturnMaterialsForAbsentStudents(int groupId)
-        {
-            var group = await _groupRepository.GetByIdAsync(groupId);
-            if (group == null)
-                return NotFound(new ApiResponse(404, "Group not found."));
 
-            var sections = await _sectionRepository.GetAllWithIncludeAsync(
-                s => s.GroupId == groupId,
+        [HttpPost("{sectionId}/return-materials-for-absents")]
+        public async Task<IActionResult> ReturnMaterialsForAbsentStudents(int sectionId)
+        {
+            var section = await _sectionRepository.GetByIdWithIncludeAsync(
+                s => s.Id == sectionId,
+                s => s.Group,
                 s => s.Experiment,
                 s => s.Experiment.ExperimentMaterials
             );
 
-            if (sections == null || !sections.Any())
-                return Ok(new { Message = "No sections found for this group." });
+            if (section == null)
+                return NotFound(new ApiResponse(404, "Section not found."));
 
-            var allAttendance = new Dictionary<int, bool>(); // studentId => isPresent (true if present in any section)
+            var group = section.Group;
 
-            foreach (var section in sections)
+            int totalStudents = group.NumberOfStudent;
+
+        
+            var attendanceRecords = new Dictionary<int, bool>();
+            if (!string.IsNullOrWhiteSpace(section.AttendanceJson))
             {
-                if (!string.IsNullOrWhiteSpace(section.AttendanceJson))
-                {
-                    var attendanceRecords = JsonConvert.DeserializeObject<Dictionary<int, bool>>(section.AttendanceJson);
-                    foreach (var record in attendanceRecords)
-                    {
-                        if (!allAttendance.ContainsKey(record.Key))
-                            allAttendance[record.Key] = record.Value;
-                        else
-                            allAttendance[record.Key] = allAttendance[record.Key] || record.Value;
-                    }
-                }
+                attendanceRecords = JsonConvert.DeserializeObject<Dictionary<int, bool>>(section.AttendanceJson);
             }
 
-            int totalStudents = group.Students.Count;
-            int presentCount = allAttendance.Count(kvp => kvp.Value);
+            int presentCount = attendanceRecords.Count(kvp => kvp.Value);
             int absentCount = totalStudents - presentCount;
 
-            // Dictionary علشان ما نكررش نفس الماده في اكتر من سكشن
-            var materialAdjustments = new Dictionary<int, double>(); // MaterialId => QuantityToAdd
-
-            foreach (var section in sections)
+            if (absentCount <= 0)
             {
-                foreach (var expMaterial in section.Experiment.ExperimentMaterials)
-                {
-                    if (materialAdjustments.ContainsKey(expMaterial.MaterialId))
-                        materialAdjustments[expMaterial.MaterialId] += expMaterial.QuantityRequired * absentCount;
-                    else
-                        materialAdjustments[expMaterial.MaterialId] = expMaterial.QuantityRequired * absentCount;
-                }
+                return Ok(new { Message = "No absent students. No materials to return." });
             }
 
-            // نرجّع المواد للمخزون
+            var materialAdjustments = new Dictionary<int, double>(); // MaterialId => QuantityToAdd
+
+            foreach (var expMaterial in section.Experiment.ExperimentMaterials)
+            {
+                double quantityToReturn = expMaterial.QuantityRequired * absentCount;
+                materialAdjustments[expMaterial.MaterialId] = quantityToReturn;
+            }
+
             foreach (var entry in materialAdjustments)
             {
                 var material = await _materialRepository.GetByIdAsync(entry.Key);
@@ -395,7 +396,8 @@ namespace Chemistry_laboratory_management.Controllers
 
             return Ok(new
             {
-                Message = "Materials returned to stock for absent students.",
+                Message = "Materials returned to stock for absent students in the section.",
+                SectionId = section.Id,
                 ReturnedMaterials = materialAdjustments.Select(m => new
                 {
                     MaterialId = m.Key,
@@ -403,9 +405,5 @@ namespace Chemistry_laboratory_management.Controllers
                 })
             });
         }
-
-
-       
-
     }
 }
